@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영국 탐험 퀴즈</title>
+<style>
+  :root{
+    --navy:#0A1F44;
+    --red:#C8102E;
+    --cream:#F7F1E3;
+    --gold:#D4A017;
+    --sky:#4A7FB5;
+    --ink:#1B1B1B;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Georgia', 'Nanum Myeongjo', serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(200,16,46,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(10,31,68,0.08), transparent 45%),
+      var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:560px;
+  }
+  .masthead{
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .masthead .flagbar{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .flagbar span{
+    width:34px;height:6px;border-radius:3px;
+  }
+  .flagbar span:nth-child(1){background:var(--red);}
+  .flagbar span:nth-child(2){background:var(--navy);}
+  .flagbar span:nth-child(3){background:var(--gold);}
+  .masthead h1{
+    font-size:2rem;
+    margin:0;
+    letter-spacing:-0.5px;
+    color:var(--navy);
+  }
+  .masthead p{
+    margin:8px 0 0;
+    color:#5a5a5a;
+    font-size:0.95rem;
+    font-family:'Trebuchet MS', sans-serif;
+  }
+  .music-btn{
+    margin-top:14px;
+    font-family:'Trebuchet MS', sans-serif;
+    font-size:0.82rem;
+    font-weight:bold;
+    background:#fff;
+    border:2px solid var(--navy);
+    color:var(--navy);
+    padding:7px 16px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .music-btn.on{
+    background:var(--navy);
+    color:var(--cream);
+  }
+
+  /* SETUP SCREEN */
+  .panel{
+    background:var(--card);
+    border:1px solid #e6ddc7;
+    border-radius:14px;
+    padding:26px 22px;
+    box-shadow: 0 10px 30px rgba(10,31,68,0.06);
+  }
+  .field-label{
+    font-family:'Trebuchet MS', sans-serif;
+    font-weight:bold;
+    color:var(--navy);
+    font-size:0.95rem;
+    margin:0 0 10px;
+  }
+  .option-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .option-grid.two{grid-template-columns:1fr 1fr;}
+  .opt-btn{
+    font-family:'Trebuchet MS', sans-serif;
+    border:2px solid #dcd3ba;
+    background:#fffdf8;
+    border-radius:10px;
+    padding:14px 8px;
+    font-size:0.92rem;
+    cursor:pointer;
+    text-align:center;
+    color:var(--ink);
+    transition:border-color .15s, background .15s, transform .1s;
+    line-height:1.3;
+  }
+  .opt-btn .emoji{display:block;font-size:1.5rem;margin-bottom:6px;}
+  .opt-btn:hover{border-color:var(--sky); transform:translateY(-1px);}
+  .opt-btn.selected{
+    border-color:var(--red);
+    background:#fff5f2;
+    color:var(--red);
+    font-weight:bold;
+  }
+  .start-btn{
+    width:100%;
+    padding:15px;
+    font-family:'Trebuchet MS', sans-serif;
+    font-weight:bold;
+    font-size:1.05rem;
+    background:var(--navy);
+    color:var(--cream);
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    letter-spacing:0.3px;
+  }
+  .start-btn:disabled{
+    background:#c9c3b3;
+    cursor:not-allowed;
+  }
+  .start-btn:not(:disabled):hover{background:#122a5c;}
+
+  /* QUIZ SCREEN */
+  .quiz-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+    font-family:'Trebuchet MS', sans-serif;
+  }
+  .progress-tag{
+    font-size:0.85rem;
+    color:var(--navy);
+    font-weight:bold;
+    background:#eef2f8;
+    padding:5px 12px;
+    border-radius:20px;
+  }
+  .progress-tag.hard{background:#fbe9e9;color:var(--red);}
+  .progress-bar-track{
+    height:6px;
+    background:#e9e2cd;
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--gold);
+    transition:width .3s ease;
+  }
+  .q-card{
+    background:var(--card);
+    border:1px solid #e6ddc7;
+    border-radius:14px;
+    padding:24px 22px;
+    box-shadow:0 10px 30px rgba(10,31,68,0.06);
+  }
+  .q-text{
+    font-size:1.18rem;
+    line-height:1.5;
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+  .choice{
+    display:block;
+    width:100%;
+    text-align:left;
+    font-family:'Trebuchet MS', sans-serif;
+    background:#fffdf8;
+    border:2px solid #dcd3ba;
+    border-radius:10px;
+    padding:13px 16px;
+    margin-bottom:10px;
+    font-size:0.98rem;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .choice:hover{border-color:var(--sky);}
+  .choice.correct{
+    border-color:#2e7d4f;
+    background:#eaf7ee;
+    color:#1e5c37;
+    font-weight:bold;
+  }
+  .choice.wrong{
+    border-color:var(--red);
+    background:#fdeceb;
+    color:var(--red);
+    font-weight:bold;
+  }
+  .choice.disabled{cursor:default;}
+  .explain{
+    margin-top:16px;
+    font-family:'Trebuchet MS', sans-serif;
+    font-size:0.9rem;
+    color:#4a4a4a;
+    background:#f6f3e9;
+    border-left:4px solid var(--gold);
+    padding:10px 14px;
+    border-radius:6px;
+    display:none;
+  }
+  .next-btn{
+    margin-top:18px;
+    width:100%;
+    padding:13px;
+    font-family:'Trebuchet MS', sans-serif;
+    font-weight:bold;
+    background:var(--red);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    display:none;
+  }
+
+  /* RESULT SCREEN */
+  .result-card{
+    background:var(--card);
+    border:1px solid #e6ddc7;
+    border-radius:14px;
+    padding:34px 24px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(10,31,68,0.06);
+  }
+  .result-emoji{font-size:3rem;margin-bottom:6px;}
+  .result-badge{
+    display:inline-block;
+    font-family:'Trebuchet MS', sans-serif;
+    font-weight:bold;
+    font-size:0.9rem;
+    padding:6px 16px;
+    border-radius:20px;
+    margin-bottom:10px;
+    letter-spacing:0.3px;
+  }
+  .result-badge.pass{background:#eaf7ee;color:#1e5c37;}
+  .result-badge.fail{background:#fdeceb;color:var(--red);}
+  .result-score{
+    font-size:2.4rem;
+    color:var(--navy);
+    font-weight:bold;
+    margin:4px 0 2px;
+  }
+  .result-percent{
+    font-family:'Trebuchet MS', sans-serif;
+    font-size:1.1rem;
+    color:var(--navy);
+    margin-bottom:4px;
+  }
+  .result-time{
+    font-family:'Trebuchet MS', sans-serif;
+    font-size:0.9rem;
+    color:#777;
+    margin-bottom:16px;
+  }
+  .result-msg{
+    font-family:'Trebuchet MS', sans-serif;
+    color:#555;
+    margin-bottom:22px;
+  }
+  .result-btns{display:flex;gap:10px;}
+  .result-btns button{
+    flex:1;
+    padding:13px;
+    border-radius:10px;
+    border:2px solid var(--navy);
+    background:#fff;
+    color:var(--navy);
+    font-family:'Trebuchet MS', sans-serif;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  .result-btns button.primary{
+    background:var(--navy);
+    color:var(--cream);
+  }
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <div class="flagbar"><span></span><span></span><span></span></div>
+    <h1>영국 탐험 퀴즈</h1>
+    <p>분야와 난이도를 골라 영국 지식을 확인해 보세요</p>
+    <button id="musicBtn" class="music-btn">🔇 배경음악 켜기</button>
+  </div>
+
+  <!-- SETUP -->
+  <div id="setup" class="panel">
+    <p class="field-label">1. 분야를 선택하세요</p>
+    <div class="option-grid" id="catGrid"></div>
+
+    <p class="field-label">2. 난이도를 선택하세요</p>
+    <div class="option-grid two" id="diffGrid"></div>
+
+    <button class="start-btn" id="startBtn" disabled>퀴즈 시작하기</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" class="hidden">
+    <div class="quiz-head">
+      <span class="progress-tag" id="progressTag"></span>
+      <span class="progress-tag" id="scoreTag"></span>
+    </div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <div class="q-card">
+      <p class="q-text" id="qText"></p>
+      <div id="choices"></div>
+      <div class="explain" id="explain"></div>
+      <button class="next-btn" id="nextBtn">다음 문제</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result" class="hidden">
+    <div class="result-card">
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <div class="result-badge" id="resultBadge"></div>
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-percent" id="resultPercent"></div>
+      <div class="result-time" id="resultTime"></div>
+      <div class="result-msg" id="resultMsg"></div>
+      <div class="result-btns">
+        <button id="retryBtn">같은 문제 다시</button>
+        <button class="primary" id="homeBtn">다른 분야 선택</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- 문제 데이터 (테스트용 샘플) ---------------- */
+const QUESTIONS = {
+  geo: {
+    label: "지리 & 기후",
+    emoji: "🗺️",
+    low: [
+      {q:"영국의 수도는 어디일까요?", choices:["런던","파리","베를린","로마"], answer:0, explain:"영국의 수도는 런던(London)이에요. 템스강 옆에 있어요."},
+      {q:"영국을 둘러싸고 있는 바다는 어떤 특징이 있을까요?", choices:["섬나라라서 바다로 둘러싸여 있다","바다가 전혀 없다","사막으로 둘러싸여 있다","산으로만 둘러싸여 있다"], answer:0, explain:"영국은 유럽 대륙과 떨어진 섬나라예요."},
+      {q:"영국 날씨의 특징으로 알맞은 것은?", choices:["비가 자주 오고 흐린 날이 많다","일년 내내 매우 덥다","눈이 절대 오지 않는다","사막 기후이다"], answer:0, explain:"영국은 비가 자주 오고 날씨 변화가 잦은 것으로 유명해요."},
+      {q:"영국은 몇 개의 나라로 이루어져 있을까요?", choices:["4개(잉글랜드, 스코틀랜드, 웨일스, 북아일랜드)","1개","2개","7개"], answer:0, explain:"영국(UK)은 잉글랜드, 스코틀랜드, 웨일스, 북아일랜드 4개 나라로 이루어져 있어요."},
+      {q:"영국에서 가장 긴 강의 이름은?", choices:["템스강","한강","나일강","아마존강"], answer:0, explain:"템스강(River Thames)은 런던을 가로지르는 영국의 대표적인 강이에요."}
+    ],
+    high: [
+      {q:"영국의 표준시(GMT)의 기준이 되는 천문대가 있는 곳은?", choices:["그리니치","옥스퍼드","에든버러","리버풀"], answer:0, explain:"그리니치 천문대는 세계 표준시(GMT)의 기준점이에요."},
+      {q:"영국 날씨가 변화무쌍한 주된 이유로 알맞은 것은?", choices:["따뜻한 걸프류와 편서풍의 영향을 받기 때문","적도에 가깝기 때문","사막 지역이기 때문","고산지대이기 때문"], answer:0, explain:"영국은 멕시코 만류(걸프류)와 편서풍의 영향으로 날씨가 자주 바뀌어요."},
+      {q:"스코틀랜드의 수도는 어디일까요?", choices:["에든버러","글래스고","벨파스트","카디프"], answer:0, explain:"스코틀랜드의 수도는 에든버러(Edinburgh)예요."},
+      {q:"영국에서 가장 높은 산의 이름은?", choices:["벤 네비스","스노든산","스카펠 파이크","에베레스트"], answer:0, explain:"벤 네비스(Ben Nevis)는 스코틀랜드에 있는 영국에서 가장 높은 산이에요."},
+      {q:"웨일스의 수도는 어디일까요?", choices:["카디프","벨파스트","맨체스터","브리스톨"], answer:0, explain:"웨일스의 수도는 카디프(Cardiff)예요."}
+    ]
+  },
+  culture: {
+    label: "생활 & 문화",
+    emoji: "🏰",
+    low: [
+      {q:"영국 사람들이 즐겨 마시는 대표적인 음료는?", choices:["홍차","녹차","커피","콜라"], answer:0, explain:"영국은 '애프터눈 티' 문화로 유명할 만큼 홍차를 즐겨 마셔요."},
+      {q:"영국의 대표적인 왕실 근위병이 지키는 곳은?", choices:["버킹엄 궁전","에펠탑","백악관","콜로세움"], answer:0, explain:"버킹엄 궁전은 영국 왕실의 공식 거처예요."},
+      {q:"영국에서 자동차는 어느 쪽 좌석에서 운전할까요?", choices:["오른쪽 좌석에서 운전한다","왼쪽 좌석에서 운전한다","가운데 좌석에서 운전한다","자동차가 없다"], answer:0, explain:"영국은 우리나라와 반대로 차가 왼쪽 도로로 다니고, 운전석은 오른쪽에 있어요."},
+      {q:"영국의 유명한 빨간색 공중전화 박스처럼, 영국의 상징적인 색이 들어간 우체통 색깔은?", choices:["빨간색","노란색","초록색","파란색"], answer:0, explain:"영국의 우체통과 공중전화 박스는 빨간색으로 유명해요."},
+      {q:"영국 학생들이 입는 교복 문화에 대한 설명으로 알맞은 것은?", choices:["대부분의 학교에서 교복을 입는다","교복이 절대 없다","모두 똑같은 색의 옷만 있다","군복을 입는다"], answer:0, explain:"영국은 초등학교부터 교복을 입는 학교가 많아요."}
+    ],
+    high: [
+      {q:"영국의 전통 요리로 생선과 감자튀김을 함께 먹는 음식은?", choices:["피시 앤 칩스","스시","파스타","타코"], answer:0, explain:"피시 앤 칩스(Fish and Chips)는 영국의 대표적인 서민 음식이에요."},
+      {q:"영국에서 매년 열리는 세계적인 테니스 대회의 이름은?", choices:["윔블던","US오픈","프랑스오픈","호주오픈"], answer:0, explain:"윔블던(Wimbledon)은 런던에서 열리는 세계 4대 테니스 대회 중 하나예요."},
+      {q:"영국 왕실의 상징적인 궁전이 아닌 것은?", choices:["베르사유 궁전","버킹엄 궁전","윈저성","켄싱턴 궁전"], answer:0, explain:"베르사유 궁전은 프랑스에 있는 궁전이에요."},
+      {q:"해리포터 시리즈의 작가 조앤 K. 롤링의 출신 국가는?", choices:["영국","미국","캐나다","호주"], answer:0, explain:"조앤 K. 롤링(J.K. Rowling)은 영국 출신 작가예요."},
+      {q:"영국의 전통 있는 명문 대학으로 유명한 두 도시는?", choices:["옥스퍼드와 케임브리지","런던과 파리","맨체스터와 리버풀","에든버러와 글래스고"], answer:0, explain:"옥스퍼드 대학교와 케임브리지 대학교는 영국의 대표적인 명문 대학이에요."}
+    ]
+  },
+  general: {
+    label: "상식",
+    emoji: "💡",
+    low: [
+      {topic:"colony", q:"영국은 왜 '해가 지지 않는 나라'라고 불렸을까요?", choices:["세계 여러 곳에 식민지가 있어서","영국 날씨가 항상 맑아서","영국이 적도 지역에 있어서","영국에는 밤이 없어서"], answer:0, explain:"영국은 세계 곳곳에 식민지가 있어서, 한쪽이 밤이어도 다른 쪽은 항상 낮이었어요."},
+      {topic:"colony", q:"영국이 식민지를 만들기 시작한 시기는?", choices:["17세기부터","20세기부터","고대부터","21세기부터"], answer:0, explain:"영국은 17세기부터 세계 곳곳에 식민지를 만들기 시작했어요."},
+      {topic:"colony", q:"식민지란 무엇일까요?", choices:["다른 나라가 지배하는 땅","왕이 사는 궁전","전쟁이 일어난 곳","관광지로 유명한 섬"], answer:0, explain:"식민지는 다른 나라의 지배를 받는 땅을 말해요."},
+      {topic:"industrial", q:"산업혁명 때 새로 생긴 것은 무엇일까요?", choices:["증기 기관","스마트폰","자동차 내비게이션","인터넷"], answer:0, explain:"산업혁명 때 증기 기관이 새롭게 만들어져 산업이 크게 발전했어요."},
+      {topic:"industrial", q:"산업혁명이란 무엇일까요?", choices:["여러 산업이 새롭게 발전한 사건","왕이 바뀐 사건","전쟁이 끝난 사건","새로운 나라가 생긴 사건"], answer:0, explain:"산업혁명은 중공업, 증기 기관 등 여러 산업이 새롭게 발전하고 탄생한 사건이에요."},
+      {topic:"industrial", q:"영국이 세계 최초로 이끈 사건은 무엇일까요?", choices:["산업혁명","우주 탐사","올림픽 개최","인터넷 발명"], answer:0, explain:"영국은 제1, 2차 산업혁명을 세계에서 가장 먼저 이끌었어요."},
+      {topic:"war", q:"영국이 큰 피해를 입은 전쟁은 무엇일까요?", choices:["제1, 2차 세계대전","십자군 전쟁","트로이 전쟁","임진왜란"], answer:0, explain:"영국은 제1차, 제2차 세계대전을 겪으며 큰 피해를 입었어요."},
+      {topic:"war", q:"세계대전 후 영국 경제는 어떻게 되었을까요?", choices:["큰 타격을 입었다","더 크게 성장했다","전혀 변화가 없었다","오히려 부유해졌다"], answer:0, explain:"두 차례의 세계대전을 겪으며 영국 경제는 큰 타격을 입었어요."},
+      {topic:"identity", q:"영국을 상징하는 사람은 누구일까요?", choices:["왕(또는 여왕)","대통령","총리","시장"], answer:0, explain:"영국은 대통령이 아니라 왕이나 여왕이 나라를 상징해요."},
+      {topic:"identity", q:"영국의 정치 제도는 무엇일까요?", choices:["군주제","공화제","군사 정권","귀족 정치"], answer:0, explain:"영국은 왕이나 여왕이 있는 군주제 국가예요."},
+      {topic:"identity", q:"영국은 몇 개의 나라로 이루어져 있나요?", choices:["4개","1개","2개","7개"], answer:0, explain:"영국은 잉글랜드, 스코틀랜드, 웨일스, 북아일랜드 4개 나라로 이루어져 있어요."},
+      {topic:"identity", q:"'영어'라는 이름은 어디서 왔을까요?", choices:["잉글랜드(England)","미국","프랑스","그리스"], answer:0, explain:"영어(English)는 잉글랜드(England)라는 나라 이름에서 왔어요."},
+      {topic:"identity", q:"영어를 쓰는 나라로 알맞은 것은?", choices:["영국, 미국 등 여러 나라","영국에서만 쓴다","아무도 안 쓴다","딱 한 나라에서만 쓴다"], answer:0, explain:"영어는 영국, 미국 등 세계 여러 나라에서 쓰는 공통 언어예요."},
+      {topic:"identity", q:"영국 왕(여왕)이 하는 역할은 무엇일까요?", choices:["나라를 상징하는 역할","법을 직접 만드는 역할","군대를 직접 지휘하는 역할","세금을 직접 걷는 역할"], answer:0, explain:"영국 왕(여왕)은 실제 정치가 아니라 나라를 상징하는 역할을 해요."}
+    ],
+    high: [
+      {topic:"colony", q:"영국 영토가 지구 곳곳에 퍼져 있어서 생긴 표현은?", choices:["해가 지지 않는 나라","안개의 나라","신사의 나라","축구의 나라"], answer:0, explain:"영토가 지구 반대편까지 퍼져 있어 늘 어딘가는 낮이었기 때문에 생긴 표현이에요."},
+      {topic:"colony", q:"영국이 식민지를 만든 대륙으로 알맞은 것은?", choices:["아시아, 아메리카, 아프리카 등","유럽 대륙에만 만들었다","남극 대륙에만 만들었다","식민지를 만든 적이 없다"], answer:0, explain:"영국은 17세기 이후 아시아, 아메리카, 아프리카 등 여러 대륙에 식민지를 두었어요."},
+      {topic:"industrial", q:"산업혁명 때 발전한 산업으로 알맞은 것은?", choices:["중공업, 증기 기관, 전기 산업","농업 중심 경제로의 전환","어업 산업만 발전","관광 산업만 발전"], answer:0, explain:"산업혁명 시기에는 중공업, 증기 기관, 전기 산업 등이 크게 발전했어요."},
+      {topic:"industrial", q:"제1차 산업혁명에서 중심이 된 것은?", choices:["증기 기관","전기 산업","인터넷","원자력"], answer:0, explain:"제1차 산업혁명은 증기 기관을 중심으로 발전했어요."},
+      {topic:"industrial", q:"제2차 산업혁명에서 중심이 된 것은?", choices:["전기 산업","증기 기관","인공지능","우주 산업"], answer:0, explain:"제2차 산업혁명은 전기 산업과 중화학 공업을 중심으로 발전했어요."},
+      {topic:"industrial", q:"영국이 산업혁명을 이끌 수 있었던 이유 중 하나는?", choices:["석탄과 철 같은 자원이 풍부해서","인구가 매우 적어서","농업만 발달해서","날씨가 따뜻해서"], answer:0, explain:"영국은 석탄, 철 같은 자원이 풍부해서 산업혁명을 이끌기 좋았어요."},
+      {topic:"war", q:"영국이 세계대전으로 큰 타격을 입은 이유는?", choices:["전쟁에 많은 돈과 자원을 썼기 때문","세계대전과 관련이 없어서","오히려 무역이 크게 늘어서","식민지가 갑자기 늘어서"], answer:0, explain:"전쟁에 많은 비용과 자원을 쓰고, 산업 시설과 인력에 큰 피해를 입었기 때문이에요."},
+      {topic:"war", q:"세계대전 후 영국의 식민지들은 어떻게 되었을까요?", choices:["하나둘 독립하기 시작했다","식민지가 더 늘어났다","아무 변화가 없었다","모두 영국의 일부가 되었다"], answer:0, explain:"세계대전 이후 영국의 힘이 약해지면서 식민지들이 하나둘 독립하기 시작했어요."},
+      {topic:"identity", q:"왕이 있지만 실제 정치는 의회가 하는 제도는?", choices:["입헌 군주제","절대 왕정","공화제","군사 독재"], answer:0, explain:"영국은 왕이 있지만 실제 정치는 의회가 이끄는 입헌 군주제 국가예요."},
+      {topic:"identity", q:"유니언 잭에 들어있지 않은 국기는?", choices:["아일랜드(남부, 독립국)","스코틀랜드","잉글랜드","북아일랜드"], answer:0, explain:"유니언 잭은 영국을 이루는 4개 나라의 국기가 합쳐진 것으로, 별개의 독립국인 아일랜드는 포함되지 않아요."},
+      {topic:"identity", q:"'English'라는 단어는 어떻게 만들어졌을까요?", choices:["England + ish","England + an","Eng + lish","특별한 규칙 없이 만들어짐"], answer:0, explain:"English는 England(잉글랜드)에 '~의 것'이라는 뜻의 -ish가 붙어 만들어졌어요."},
+      {topic:"identity", q:"영어가 세계 여러 나라에서 쓰이게 된 것과 관련 있는 것은?", choices:["영국의 식민지 확장","영어가 배우기 가장 쉬운 언어라서","영어 사용 국가가 원래 하나였어서","영국의 날씨가 좋아서"], answer:0, explain:"영국이 과거 여러 식민지를 두며 영향력을 넓혔기 때문에 영어가 널리 쓰이게 됐어요."},
+      {topic:"identity", q:"영국 국기에는 몇 개 나라의 국기가 합쳐져 있나요?", choices:["4개","1개","2개","6개"], answer:0, explain:"유니언 잭은 잉글랜드, 스코틀랜드, 웨일스, 북아일랜드 4개 나라의 국기가 합쳐진 것이에요."},
+      {topic:"industrial", q:"산업혁명과 식민지의 관계로 알맞은 것은?", choices:["식민지에서 원료를 가져와 제품을 만들어 팔았다","산업혁명과 식민지는 전혀 관련이 없다","식민지에서 만든 제품을 영국이 사왔다","식민지가 산업혁명을 방해했다"], answer:0, explain:"영국은 식민지에서 원료를 가져오고, 만든 제품을 다시 식민지에 팔았어요."},
+      {topic:"combined", q:"영국 역사의 흐름으로 알맞은 순서는?", choices:["식민지 확장 → 산업혁명 → 세계대전","세계대전 → 식민지 확장 → 산업혁명","산업혁명 → 세계대전 → 식민지 확장","세계대전 → 산업혁명 → 식민지 확장"], answer:0, explain:"영국은 17세기 식민지 확장, 산업혁명, 그리고 세계대전으로 인한 경제 타격 순서를 겪었어요."}
+    ]
+  }
+};
+
+let state = { cat:null, diff:null, idx:0, score:0, order:[], startTime:0 };
+
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 같은 소주제(topic)의 문제는 서로 뭉쳐서 나오지만, 소주제 묶음의 순서와
+// 각 문제의 선택지 순서(정답 위치)는 매번 랜덤으로 섞이도록 구성
+function buildQuizOrder(rawList){
+  const groups = [];
+  const groupIndexOf = {};
+  rawList.forEach((item, idx)=>{
+    const key = item.topic || ('__single_' + idx);
+    if(!(key in groupIndexOf)){
+      groupIndexOf[key] = groups.length;
+      groups.push([]);
+    }
+    groups[groupIndexOf[key]].push(item);
+  });
+  const shuffledGroups = shuffleArray(groups);
+  const flat = shuffledGroups.flat();
+  return flat.map(item=>{
+    const correctText = item.choices[item.answer];
+    const shuffledChoices = shuffleArray(item.choices);
+    const newAnswer = shuffledChoices.indexOf(correctText);
+    return { q:item.q, choices:shuffledChoices, answer:newAnswer, explain:item.explain };
+  });
+}
+
+/* ---------------- 배경음악 (영국풍 행진곡풍 멜로디, 자체 생성 · 파일 없음) ---------------- */
+let audioCtx = null;
+let masterGain = null;
+let musicPlaying = false;
+let musicTimer = null;
+let activeNodes = [];
+
+const NOTE_FREQ = {
+  C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
+  C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880.00, B5:987.77
+};
+
+// 자체 제작한 영국풍 행진곡 느낌의 짧은 멜로디 루프 (실제 곡 아님, 저작권 없음)
+const MELODY = [
+  {n:'G4',d:0.30},{n:'G4',d:0.30},{n:'C5',d:0.45},{n:'E5',d:0.15},
+  {n:'D5',d:0.30},{n:'C5',d:0.30},{n:'E5',d:0.45},{n:'D5',d:0.15},
+  {n:'G4',d:0.30},{n:'G4',d:0.30},{n:'A4',d:0.30},{n:'B4',d:0.30},
+  {n:'C5',d:0.60},{n:'G4',d:0.60},
+  {n:'A4',d:0.30},{n:'A4',d:0.30},{n:'B4',d:0.30},{n:'C5',d:0.30},
+  {n:'D5',d:0.60},{n:'A4',d:0.60}
+];
+
+function playNote(freq, duration, startTime){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(0.14, startTime + 0.02);
+  gain.gain.linearRampToValueAtTime(0, startTime + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+  activeNodes.push(osc);
+  osc.onended = ()=>{
+    activeNodes = activeNodes.filter(n=>n!==osc);
+  };
+}
+
+function scheduleLoop(){
+  if(!musicPlaying) return;
+  let t = audioCtx.currentTime + 0.05;
+  let totalDur = 0;
+  MELODY.forEach(note=>{
+    playNote(NOTE_FREQ[note.n], note.d*0.95, t);
+    t += note.d;
+    totalDur += note.d;
+  });
+  musicTimer = setTimeout(scheduleLoop, totalDur*1000);
+}
+
+function ensureAudioCtx(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(audioCtx.destination);
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playFxTone(freq, start, dur, type, vol){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(vol, start + 0.02);
+  gain.gain.linearRampToValueAtTime(0, start + dur);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination); // 배경음악과 별도로 항상 들리도록 destination에 직접 연결
+  osc.start(start);
+  osc.stop(start + dur + 0.02);
+}
+
+function playSuccessSound(){
+  ensureAudioCtx();
+  const t = audioCtx.currentTime;
+  // 상승하는 승리 아르페지오 (C5-E5-G5-C6)
+  [523.25, 659.25, 783.99, 1046.50].forEach((freq, i)=>{
+    playFxTone(freq, t + i*0.13, 0.28, 'triangle', 0.2);
+  });
+}
+
+function playFailSound(){
+  ensureAudioCtx();
+  const t = audioCtx.currentTime;
+  // 하강하는 낮은 부저음
+  playFxTone(220, t, 0.18, 'sawtooth', 0.16);
+  playFxTone(185, t + 0.15, 0.18, 'sawtooth', 0.16);
+  playFxTone(140, t + 0.30, 0.35, 'sawtooth', 0.16);
+}
+
+const musicBtn = document.getElementById('musicBtn');
+musicBtn.onclick = ()=>{
+  ensureAudioCtx();
+  if(!musicPlaying){
+    musicPlaying = true;
+    audioCtx.resume();
+    scheduleLoop();
+    musicBtn.textContent = '🔊 배경음악 끄기';
+    musicBtn.classList.add('on');
+  } else {
+    musicPlaying = false;
+    clearTimeout(musicTimer);
+    const now = audioCtx.currentTime;
+    masterGain.gain.cancelScheduledValues(now);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+    masterGain.gain.linearRampToValueAtTime(0, now + 0.03);
+    activeNodes.forEach(osc=>{
+      try{ osc.stop(now + 0.04); }catch(e){}
+    });
+    activeNodes = [];
+    setTimeout(()=>{
+      masterGain.gain.setValueAtTime(1, audioCtx.currentTime);
+    }, 60);
+    musicBtn.textContent = '🔇 배경음악 켜기';
+    musicBtn.classList.remove('on');
+  }
+};
+
+function formatTime(ms){
+  const totalSec = Math.floor(ms/1000);
+  const min = Math.floor(totalSec/60);
+  const sec = totalSec%60;
+  return `${min}분 ${sec.toString().padStart(2,'0')}초`;
+}
+
+/* ---------------- SETUP 화면 구성 ---------------- */
+const catGrid = document.getElementById('catGrid');
+const diffGrid = document.getElementById('diffGrid');
+const startBtn = document.getElementById('startBtn');
+
+Object.keys(QUESTIONS).forEach(key=>{
+  const b = document.createElement('button');
+  b.className = 'opt-btn';
+  b.dataset.key = key;
+  b.innerHTML = `<span class="emoji">${QUESTIONS[key].emoji}</span>${QUESTIONS[key].label}`;
+  b.onclick = ()=>{
+    document.querySelectorAll('#catGrid .opt-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.cat = key;
+    checkReady();
+  };
+  catGrid.appendChild(b);
+});
+
+[['low','하 (쉬움)','🙂'],['high','상 (어려움)','🔥']].forEach(([key,label,emoji])=>{
+  const b = document.createElement('button');
+  b.className = 'opt-btn';
+  b.dataset.key = key;
+  b.innerHTML = `<span class="emoji">${emoji}</span>${label}`;
+  b.onclick = ()=>{
+    document.querySelectorAll('#diffGrid .opt-btn').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.diff = key;
+    checkReady();
+  };
+  diffGrid.appendChild(b);
+});
+
+function checkReady(){
+  startBtn.disabled = !(state.cat && state.diff);
+}
+
+startBtn.onclick = ()=>{
+  state.order = buildQuizOrder(QUESTIONS[state.cat][state.diff]);
+  state.idx = 0;
+  state.score = 0;
+  state.startTime = Date.now();
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  document.getElementById('result').classList.add('hidden');
+  renderQuestion();
+};
+
+/* ---------------- QUIZ 화면 ---------------- */
+const qText = document.getElementById('qText');
+const choicesDiv = document.getElementById('choices');
+const explainDiv = document.getElementById('explain');
+const nextBtn = document.getElementById('nextBtn');
+const progressTag = document.getElementById('progressTag');
+const scoreTag = document.getElementById('scoreTag');
+const progressFill = document.getElementById('progressFill');
+
+function renderQuestion(){
+  const total = state.order.length;
+  const q = state.order[state.idx];
+  const diffLabel = state.diff === 'high' ? '상' : '하';
+  progressTag.textContent = `문제 ${state.idx+1} / ${total} · 난이도 ${diffLabel}`;
+  progressTag.className = 'progress-tag' + (state.diff==='high' ? ' hard':'');
+  scoreTag.textContent = `맞은 개수: ${state.score}`;
+  progressFill.style.width = `${(state.idx/total)*100}%`;
+
+  qText.textContent = `Q${state.idx+1}. ${q.q}`;
+  choicesDiv.innerHTML = '';
+  explainDiv.style.display = 'none';
+  nextBtn.style.display = 'none';
+
+  q.choices.forEach((choiceText, i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choiceText;
+    btn.onclick = ()=> selectAnswer(i, btn);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(i, btnEl){
+  const q = state.order[state.idx];
+  const allBtns = choicesDiv.querySelectorAll('.choice');
+  allBtns.forEach(b=>b.classList.add('disabled'));
+  allBtns.forEach(b=>b.onclick=null);
+
+  if(i === q.answer){
+    btnEl.classList.add('correct');
+    state.score++;
+  } else {
+    btnEl.classList.add('wrong');
+    allBtns[q.answer].classList.add('correct');
+  }
+  explainDiv.textContent = `💬 ${q.explain}`;
+  explainDiv.style.display = 'block';
+  nextBtn.style.display = 'block';
+  scoreTag.textContent = `맞은 개수: ${state.score}`;
+}
+
+nextBtn.onclick = ()=>{
+  state.idx++;
+  if(state.idx >= state.order.length){
+    showResult();
+  } else {
+    renderQuestion();
+  }
+};
+
+/* ---------------- RESULT 화면 ---------------- */
+function showResult(){
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('result').classList.remove('hidden');
+  const total = state.order.length;
+  const score = state.score;
+  const percent = Math.round((score/total)*100);
+  const elapsed = Date.now() - state.startTime;
+  const isPass = percent >= 90;
+
+  document.getElementById('resultScore').textContent = `${score} / ${total} 개 정답`;
+  document.getElementById('resultPercent').textContent = `정답률 ${percent}%`;
+  document.getElementById('resultTime').textContent = `걸린 시간: ${formatTime(elapsed)}`;
+
+  const badge = document.getElementById('resultBadge');
+  badge.textContent = isPass ? '✅ 성공 (90% 이상)' : '❌ 실패 (90% 미만)';
+  badge.className = 'result-badge ' + (isPass ? 'pass' : 'fail');
+
+  if(isPass){ playSuccessSound(); } else { playFailSound(); }
+
+  let emoji, msg;
+  if(score === total){ emoji='🏆'; msg='완벽해요! 영국 박사님이 따로 없네요!'; }
+  else if(isPass){ emoji='🎉'; msg='아주 잘했어요! 90%를 넘겨서 성공이에요.'; }
+  else if(score >= total*0.7){ emoji='👍'; msg='조금만 더 하면 성공이에요! 다시 도전해볼까요?'; }
+  else if(score >= total*0.4){ emoji='💪'; msg='잘하고 있어요! 다시 한 번 도전해볼까요?'; }
+  else { emoji='📚'; msg='조금 더 공부하고 다시 도전해봐요!'; }
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+document.getElementById('retryBtn').onclick = ()=>{
+  state.order = buildQuizOrder(QUESTIONS[state.cat][state.diff]);
+  state.idx = 0;
+  state.score = 0;
+  state.startTime = Date.now();
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  renderQuestion();
+};
+
+document.getElementById('homeBtn').onclick = ()=>{
+  state.cat = null; state.diff = null;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  startBtn.disabled = true;
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('setup').classList.remove('hidden');
+};
+</script>
+</body>
+</html>
